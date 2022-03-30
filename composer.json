@@ -1,0 +1,16 @@
+{
+    "name": "admin/php_mvc_framework",
+    "autoload": {
+        "psr-4": {
+            "app\\": "./",
+            "Admin\\PhpMvcFramework\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "MinhHieu259",
+            "email": "mhieu7252@gmail.com"
+        }
+    ],
+    "require": {}
+}
