@@ -19,7 +19,32 @@ class Database
     public function applyMigrations()
     {
         $this->createMigrationsTable();
-        $this->getAppliedMigrations();
+        $appliedMigrations = $this->getAppliedMigrations();
+        $newMigrations = [];
+        // lấy tên các file trong thư mục migrations
+        $files = scandir(Application::$ROOT_DIR.'/migrations');
+        // trả về 1 mảng các file chứa có trong table migration ở DB
+        $toApplyMigrations = array_diff($files, $appliedMigrations);
+    
+        foreach ($toApplyMigrations as $migration) {
+            if($migration === '.' || $migration === '..'){
+                continue;
+            }
+
+            require_once Application::$ROOT_DIR.'/migrations/'.$migration;
+            $className = pathinfo($migration, PATHINFO_FILENAME);
+            $instance = new $className();
+            $this->log("Applplying migration $migration");
+            $instance->up();
+            $this->log("Applplied migration $migration");
+            $newMigrations[] = $migration;
+        }
+
+        if(!empty($newMigrations)){
+            $this->saveMigrations($newMigrations);
+        }else {
+            $this->log("All migrations are applied");
+        }
     }
 
     public function createMigrationsTable()
@@ -34,5 +59,28 @@ class Database
     public function getAppliedMigrations()
     {
         $statement = $this->pdo->prepare("SELECT migration FROM migrations");
+        $statement->execute();
+
+        return $statement->fetchAll(\PDO::FETCH_COLUMN);
+    }
+
+    public function saveMigrations(array $migrations)
+    {
+        $str = implode(",",array_map(fn($m) => "('$m')", $migrations));
+
+        $statement = $this->pdo->prepare("INSERT INTO migrations (migration) VALUES
+            $str
+        ");
+        $statement->execute();
+    }
+
+    public function prepare($sql)
+    {
+        return $this->pdo->prepare($sql);
+    }
+
+    public function log($message)
+    {
+        echo '[' . date('Y-m-d H:i:s') . '] - ' . $message .PHP_EOL;
     }
 }
