@@ -7,6 +7,7 @@ namespace app\core;
 class Application
 {
     public static string $ROOT_DIR;
+    public string $layout = 'main';
     public string $userClass;
     public Router $router;
     public Request $request;
@@ -14,8 +15,9 @@ class Application
     public Session $session;
     public Database $db;
     public ?DbModel $user;
+    public View $view;
     public static Application $app;
-    public Controller $controller;
+    public ?Controller $controller = null;
 
     public function __construct($rootPath, array $config)
     {
@@ -26,19 +28,32 @@ class Application
         $this->response = new Response();
         $this->session = new Session();
         $this->router = new Router($this->request, $this->response);
+        $this->view = new View();
         $this->db = new Database($config['db']);
         $primaryValue = $this->session->get('user');
         if($primaryValue){
-            $this->primaryKey = $this->userClass::primaryKey();
-            $this->user = $this->userClass::findOne([$primaryValue => $primaryValue]);
+            $primaryKey = $this->userClass::primaryKey();
+            $this->user = $this->userClass::findOne([$primaryKey => $primaryValue]);
         } else{
             $this->user = null;
         }
     }
 
+    public static function isGuest()
+    {
+        return !self::$app->user;
+    }
+
     public function run()
     {
-        echo $this->router->resolve();
+        try {
+            echo $this->router->resolve();
+        } catch (\Exception $e) {
+            $this->response->setStatusCode($e->getCode());
+            echo $this->view->renderView('_404', [
+                'exception' => $e
+            ]);
+        }
     }
 
     public function getController()

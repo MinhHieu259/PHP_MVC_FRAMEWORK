@@ -4,8 +4,9 @@ namespace app\models;
 
 use app\core\DbModel;
 use app\core\Model;
+use app\core\UserModel;
 
-class User extends DbModel
+class User extends UserModel
 {
 
     const STATUS_INACTIVE = 0;
@@ -46,7 +47,7 @@ class User extends DbModel
         ];
     }
 
-    public  function attributes(): array
+    public function attributes(): array
     {
         return ['firstname', 'lastname', 'email', 'password', 'status'];
     }
@@ -60,5 +61,10 @@ class User extends DbModel
             'password' => 'Password',
             'confirmPassword' => 'Confirm password',
         ];
+    }
+
+    public function getDisplayName(): string
+    {
+        return $this->firstname. ' '. $this->lastname;
     }
 }

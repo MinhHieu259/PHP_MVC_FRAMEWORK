@@ -1,10 +1,6 @@
 <?php
 
 use app\core\Application;
-echo '<pre>';
-var_dump(Application::$app->user);
-echo '</pre>';
-
 ?>
 <!doctype html>
 <html lang="en">
@@ -17,7 +13,7 @@ echo '</pre>';
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-    <title>Hello, world!</title>
+    <title><?php echo $this->title;?></title>
 </head>
 
 <body>
@@ -36,7 +32,7 @@ echo '</pre>';
                     <a class="nav-link" href="/contact">Contact</a>
                 </li>
             </ul>
-
+            <?php if (Application::isGuest()): ?>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item active">
                     <a class="nav-link" href="/login">Login <span class="sr-only">(current)</span></a>
@@ -45,13 +41,25 @@ echo '</pre>';
                     <a class="nav-link" href="/register">Register</a>
                 </li>
             </ul>
+            <?php else: ?>
+                <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/profile">Profile</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/logout">Welcome <?php echo Application::$app->user->getDisplayName(); ?>
+                    (Logout)
+                </a>
+                </li>
+                </ul>
+                <?php endif;?>
         </div>
     </nav>
 
     <div class="container">
-        <?php if(Application::$app->session->getFlash('success')):?>
+        <?php if (Application::$app->session->getFlash('success')): ?>
         <div class="alert alert-success">
-            <?php echo Application::$app->session->getFlash('success');?>
+            <?php echo Application::$app->session->getFlash('success'); ?>
         </div>
         <?php endif;?>
         {{content}}
